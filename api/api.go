@@ -50,7 +50,9 @@ func StartAPI(ctx context.Context, wg *sync.WaitGroup) {
 
 	go func() {
 		log.Info().Str("addr", fmt.Sprintf("http://localhost:%s", config.Conf.Port)).Msg("started api server")
-		e.Start(fmt.Sprintf(":%s", config.Conf.Port))
+		if err := e.Start(fmt.Sprintf(":%s", config.Conf.Port)); err != http.ErrServerClosed {
+			log.Fatal().Err(err).Msg("failed to start http server")
+		}
 	}()
 
 	// listen for context cancellation

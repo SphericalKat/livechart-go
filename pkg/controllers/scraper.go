@@ -49,11 +49,23 @@ func GetLatest() []entities.Show {
 			airTime = &utcTime
 		}
 
+		// get anime studios
+		studios := make([]string, 0)
+		h.ForEach(".anime-studios > li", func(i int, h *colly.HTMLElement) {
+			studios = append(studios, h.Text)
+		})
+
+		source := h.ChildText(".anime-source")
+		eps := h.ChildText(".anime-episodes")
+
 		shows = append(shows, entities.Show{
-			Title:     &title,
-			Thumbnail: &thumbURL,
-			Tags:      tags,
-			AirTime:   airTime,
+			Title:         &title,
+			Thumbnail:     &thumbURL,
+			Tags:          tags,
+			Studios:       studios,
+			AirTime:       airTime,
+			Source:        &source,
+			EpisodeFormat: &eps,
 		})
 	})
 
