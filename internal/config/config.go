@@ -26,6 +26,13 @@ func Load() {
 	// set pretty logger
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
+	// set defaults
+	k.Load(confmap.Provider(map[string]interface{}{
+		"PORT": 3000,
+		"ENV":  "dev",
+		"WEBSITE_URL": "https://livechart.me",
+	}, "."), nil)
+
 	// attempt to load .env file
 	if err := k.Load(file.Provider(".env"), dotenv.Parser()); err != nil {
 		log.Info().Err(err).Msg("unable to find env file:")
@@ -36,13 +43,6 @@ func Load() {
 	if err := k.Load(env.Provider("", ".", nil), nil); err != nil {
 		log.Fatal().Err(err).Msg("error loading config")
 	}
-
-	// set defaults
-	k.Load(confmap.Provider(map[string]interface{}{
-		"PORT": 3000,
-		"ENV":  "dev",
-		"WEBSITE_URL": "https://livechart.me",
-	}, "."), nil)
 
 	Conf = &Config{}
 	err := k.Unmarshal("", Conf)
