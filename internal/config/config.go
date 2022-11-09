@@ -41,6 +41,7 @@ func Load() {
 	k.Load(confmap.Provider(map[string]interface{}{
 		"PORT": 3000,
 		"ENV":  "dev",
+		"WEBSITE_URL": "https://livechart.me",
 	}, "."), nil)
 
 	Conf = &Config{}
