@@ -63,7 +63,10 @@ func StartAPI(ctx context.Context, wg *sync.WaitGroup) {
 
 		encoder := json.NewEncoder(c.Response())
 		encoder.SetEscapeHTML(false)
-		encoder.SetIndent("", "  ")
+
+		if config.Conf.Env == "dev" {
+			encoder.SetIndent("", "  ")
+		}
 
 		return encoder.Encode(echo.Map{
 			"success": true,
