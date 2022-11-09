@@ -3,6 +3,8 @@ package controllers
 import (
 	"fmt"
 	"net/url"
+	"strconv"
+	"time"
 
 	"github.com/SphericalKat/livechart-go/internal/config"
 	"github.com/SphericalKat/livechart-go/pkg/entities"
@@ -38,10 +40,20 @@ func GetLatest() []entities.Show {
 		}
 		thumbURL = fmt.Sprintf(`%s://%s%s?style=large&format=jpg`, parsed.Scheme, parsed.Host, parsed.Path)
 
+		// get timestamp
+		var airTime *time.Time
+		timestamp := h.ChildAttr(".poster-container > .episode-countdown", "data-timestamp")
+		t, err := strconv.ParseInt(timestamp, 10, 64)
+		if err == nil {
+			utcTime := time.Unix(t, 0).UTC()
+			airTime = &utcTime
+		}
+
 		shows = append(shows, entities.Show{
 			Title:     &title,
 			Thumbnail: &thumbURL,
 			Tags:      tags,
+			AirTime:   airTime,
 		})
 	})
 
