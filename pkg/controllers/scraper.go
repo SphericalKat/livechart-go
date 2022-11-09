@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/SphericalKat/livechart-go/internal/config"
@@ -26,10 +27,7 @@ func GetLatest() []entities.Show {
 		title := h.ChildText(".main-title")
 
 		// get tags
-		tags := make([]string, 0)
-		h.ForEach(".anime-tags > li", func(i int, h *colly.HTMLElement) {
-			tags = append(tags, h.Text)
-		})
+		tags := h.ChildTexts(".anime-tags > li")
 
 		// get thumbnail URL
 		var thumbURL string
@@ -50,13 +48,27 @@ func GetLatest() []entities.Show {
 		}
 
 		// get anime studios
-		studios := make([]string, 0)
-		h.ForEach(".anime-studios > li", func(i int, h *colly.HTMLElement) {
-			studios = append(studios, h.Text)
-		})
+		studios := h.ChildTexts(".anime-studios > li")
 
+		// get more metadata
 		source := h.ChildText(".anime-source")
 		eps := h.ChildText(".anime-episodes")
+		summary := h.ChildText(".anime-synopsis")
+
+		// get related links
+		relatedLinks := make([]entities.Link, 0)
+		h.ForEach(".related-links > li", func(i int, h *colly.HTMLElement) {
+			url := h.ChildAttr("a", "href")
+			if strings.HasPrefix(url, "/") {
+				url = fmt.Sprintf("%s%s", config.Conf.WebsiteURL, url)
+			}
+
+			linkType := entities.GetType(h.ChildAttr("a", "class"))
+			relatedLinks = append(relatedLinks, entities.Link{
+				Type: linkType,
+				URL:  url,
+			})
+		})
 
 		shows = append(shows, entities.Show{
 			Title:         &title,
@@ -66,6 +78,8 @@ func GetLatest() []entities.Show {
 			AirTime:       airTime,
 			Source:        &source,
 			EpisodeFormat: &eps,
+			Summary:       &summary,
+			RelatedLinks:  relatedLinks,
 		})
 	})
 
