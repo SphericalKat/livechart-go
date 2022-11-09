@@ -22,7 +22,7 @@ func GetLatest() []entities.Show {
 
 	shows := make([]entities.Show, 0)
 
-	c.OnHTML(".anime-card", func(h *colly.HTMLElement) {
+	c.OnHTML(".anime", func(h *colly.HTMLElement) {
 		// get title
 		title := h.ChildText(".main-title")
 

@@ -3,6 +3,7 @@ module github.com/SphericalKat/livechart-go
 go 1.19
 
 require (
+	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/knadh/koanf v1.4.4
 	github.com/labstack/echo/v4 v4.9.1

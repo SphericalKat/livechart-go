@@ -1,18 +1,28 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/SphericalKat/livechart-go/internal/config"
 	"github.com/SphericalKat/livechart-go/pkg/controllers"
+	"github.com/SphericalKat/livechart-go/pkg/entities"
+	"github.com/allegro/bigcache/v3"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog/log"
 )
+
+var cache *bigcache.BigCache
+
+func init() {
+	cache, _ = bigcache.New(context.Background(), bigcache.DefaultConfig(1*time.Hour))
+}
 
 func configureEcho() *echo.Echo {
 	e := echo.New()
@@ -36,12 +46,25 @@ func StartAPI(ctx context.Context, wg *sync.WaitGroup) {
 	})
 
 	e.GET("/latest", func(c echo.Context) error {
-		shows := controllers.GetLatest()
+		var shows []entities.Show
+		cached, err := cache.Get("latest")
+		if err != nil {
+			shows = controllers.GetLatest()
+			ins := []byte{}
+			buf := bytes.NewBuffer(ins)
+			json.NewEncoder(buf).Encode(&shows)
+			cache.Set("latest", buf.Bytes())
+		} else {
+			json.NewDecoder(bytes.NewReader(cached)).Decode(&shows)
+		}
+
 		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
 		c.Response().WriteHeader(http.StatusOK)
+
 		encoder := json.NewEncoder(c.Response())
 		encoder.SetEscapeHTML(false)
 		encoder.SetIndent("", "  ")
+
 		return encoder.Encode(echo.Map{
 			"success": true,
 			"data":    shows,
